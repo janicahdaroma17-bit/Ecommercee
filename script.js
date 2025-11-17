@@ -26,12 +26,12 @@ const productList = [
 
 // --- DOM Elements --- 
 const productListEl = document.getElementById('product-list');
-const cartEl = document.getElementById('cart-section');
 const cartListEl = document.getElementById('cart-list');
 const cartCountEl = document.getElementById('cart-count');
 const totalEl = document.getElementById('total');
 const checkoutForm = document.getElementById('checkout-form');
 const confirmCheckoutBtn = document.getElementById('confirm-checkout');
+const clearCartBtn = document.getElementById('clear-cart');
 
 // Initialize cart from localStorage or as an empty array (use unified key 'jandl_cart')
 let cart = JSON.parse(localStorage.getItem('jandl_cart')) || [];
@@ -241,9 +241,9 @@ if (confirmCheckoutBtn) {
     e.preventDefault();
     
     // Form validation
-    const name = document.getElementById('customer-name').value.trim();
-    const email = document.getElementById('customer-email').value.trim();
-    const address = document.getElementById('customer-address').value.trim();
+    const name = document.getElementById('customer-name')?.value.trim();
+    const email = document.getElementById('customer-email')?.value.trim();
+    const address = document.getElementById('customer-address')?.value.trim();
 
     if (!name || !email || !address) {
         alert('Please fill out all checkout fields.');
@@ -263,10 +263,9 @@ if (confirmCheckoutBtn) {
         total: total,
     };
 
-    // POST to backend (simulated or real)
+    // POST to backend /orders endpoint
     try {
-        // This fetch will communicate with the server.js you successfully ran on http://localhost:3000
-        const res = await fetch('http://localhost:3000/checkout', {
+        const res = await fetch('/orders', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -281,18 +280,29 @@ if (confirmCheckoutBtn) {
         const data = await res.json();
         
         // Success
-        alert(`Order placed! Order ID: ${data.orderId}`);
+        alert(`✅ Order placed! Order ID: ${data.orderId}`);
         
         // Clear cart and form
         cart = [];
         saveCart();
         renderCart();
-        checkoutForm.reset();
+        if (checkoutForm) checkoutForm.reset();
 
     } catch (err) {
         // Alert on error when placing order
-        alert('There was an error placing the order. Please ensure your Node.js server is running.');
+        alert('❌ Error placing order: ' + err.message);
     }
+    });
+}
+
+// --- Clear Cart Button ---
+if (clearCartBtn) {
+    clearCartBtn.addEventListener('click', () => {
+        if (confirm('Clear all items from cart?')) {
+            cart = [];
+            saveCart();
+            renderCart();
+        }
     });
 }
 

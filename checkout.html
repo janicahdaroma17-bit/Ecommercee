@@ -36,7 +36,6 @@
   </div>
 
   <script>
-    // Read the same key used by index.html
     const cart = JSON.parse(localStorage.getItem('jandl_cart')) || [];
     const itemsEl = document.getElementById('items');
     const totalEl = document.getElementById('total');
@@ -68,12 +67,39 @@
 
     function escapeHtml(str){ return String(str).replace(/[&<>'\"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','\'':'&#39;','"':'&quot;'}[s])); }
 
-    document.getElementById('pay').addEventListener('click', ()=>{
+    document.getElementById('pay').addEventListener('click', async () => {
       if ((cart || []).length === 0) return alert('Cart is empty.');
-      // Demo: pretend to process payment
-      alert('Payment processed (demo). Thank you!');
-      localStorage.removeItem('jandl_cart');
-      window.location.href = 'index.html';
+      
+      // Prompt for customer info
+      const name = prompt('Enter your name:');
+      if (!name) return;
+      const email = prompt('Enter your email:');
+      if (!email) return;
+      const address = prompt('Enter your address:');
+      if (!address) return;
+
+      const total = parseFloat(totalEl.textContent);
+      const order = {
+        customer: { name, email, address },
+        items: cart,
+        total: total
+      };
+
+      try {
+        const res = await fetch('/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(order)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Order failed');
+        
+        alert(`✅ Order placed! Order ID: ${data.orderId}`);
+        localStorage.removeItem('jandl_cart');
+        window.location.href = 'index.html';
+      } catch (err) {
+        alert('❌ Error: ' + err.message);
+      }
     });
 
     document.getElementById('clear').addEventListener('click', ()=>{
