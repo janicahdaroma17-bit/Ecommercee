@@ -11,6 +11,24 @@ function displayUser() {
     window.location.href = '/login.html';
     return;
   }
+  // try to read stored user info from localStorage
+  const userJson = localStorage.getItem('auth_user');
+  if (userJson) {
+    try {
+      const user = JSON.parse(userJson);
+      if (!user.isAdmin) {
+        // not an admin -> redirect to storefront
+        alert('Access denied: Admins only');
+        window.location.href = '/index.html';
+        return;
+      }
+      document.getElementById('user-display').textContent = user.name || user.email || 'Admin';
+      return;
+    } catch (e) {
+      // fallthrough to generic admin label
+    }
+  }
+  // default display if no user info available
   document.getElementById('user-display').textContent = 'Admin';
 }
 
