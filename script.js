@@ -261,9 +261,25 @@ if (confirmCheckoutBtn) {
 
     const total = parseFloat(totalEl.innerText);
 
+
+    // Map cart items to include productId (MongoDB ObjectId from dbId)
+    const itemsWithProductId = cart.map(item => {
+        // Try to find the product in productList with dbId
+        let product = null;
+        if (Array.isArray(productList)) {
+            product = productList.find(p => (p.id === item.id || p._id === item.id || p.dbId === item.id));
+        }
+        return {
+            productId: product?.dbId || product?._id || undefined,
+            name: item.name,
+            price: item.price,
+            qty: item.qty
+        };
+    });
+
     const order = {
         customer: { name, email, address },
-        items: cart,
+        items: itemsWithProductId,
         total: total,
     };
 
