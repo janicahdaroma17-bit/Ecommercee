@@ -5,6 +5,17 @@ function getAdminKey() {
   return document.getElementById('admin-key').value.trim();
 }
 
+function getAuthHeaders() {
+  const token = localStorage.getItem('auth_token');
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  else {
+    const key = getAdminKey();
+    if (key) headers['x-admin-key'] = key;
+  }
+  return headers;
+}
+
 async function fetchProducts() {
   try {
     const res = await fetch('/products');
@@ -60,8 +71,7 @@ async function render() {
       if (newName === null) return;
       const newPrice = prompt('Price', p.price);
       const payload = { name: newName, price: parseFloat(newPrice) || p.price };
-      const key = getAdminKey();
-      const res = await fetch(API_BASE + '/products/' + id, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'x-admin-key': key }, body: JSON.stringify(payload) });
+      const res = await fetch('/products/' + id, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify(payload) });
       if (res.ok) render(); else alert('Update failed');
     });
   });
@@ -76,9 +86,7 @@ document.getElementById('product-form').addEventListener('submit', async (e) => 
     imageUrl: document.getElementById('p-image').value,
     desc: document.getElementById('p-desc').value,
   };
-  const key = getAdminKey();
-  if (!key) { alert('Please enter admin key'); return; }
-  const res = await fetch(API_BASE + '/products', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-key': key }, body: JSON.stringify(payload) });
+  const res = await fetch('/products', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(payload) });
   if (res.ok) {
     document.getElementById('product-form').reset();
     render();

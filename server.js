@@ -3,12 +3,14 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 const ADMIN_KEY = process.env.ADMIN_KEY || 'admin_key_change_me';
+const JWT_SECRET = process.env.JWT_SECRET || ADMIN_KEY; // fallback to ADMIN_KEY if JWT_SECRET not provided
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/ecommer';
 
 const Product = require('./models/Product');
@@ -30,10 +32,31 @@ mongoose.connect(MONGODB_URI, {
     console.error('❌ MongoDB connection error:', err.message);
 });
 
-function checkAdmin(req, res) {
-    const key = req.headers['x-admin-key'] || '';
-    return key === ADMIN_KEY;
+function verifyToken(req, res, next) {
+    const auth = req.headers['authorization'] || '';
+    if (auth && auth.startsWith('Bearer ')) {
+        const token = auth.slice(7);
+        try {
+            const payload = jwt.verify(token, JWT_SECRET);
+            req.user = payload;
+        } catch (e) {
+            // invalid token
+            req.user = null;
+        }
+    }
+    return next();
 }
+
+function checkAdmin(req) {
+    // Admin allowed if x-admin-key header matches, or JWT present and payload.isAdmin === true
+    const key = (req.headers && req.headers['x-admin-key']) || '';
+    if (key === ADMIN_KEY) return true;
+    if (req.user && req.user.isAdmin) return true;
+    return false;
+}
+
+// apply token verification for all requests so admin checks can use req.user
+app.use(verifyToken);
 
 // Health (API) endpoint
 app.get('/api/health', (req, res) => {
@@ -95,15 +118,42 @@ app.delete('/products/:id', async (req, res) => {
 // Auth - register (simple)
 app.post('/auth/register', async (req, res) => {
     try {
-        const { name, email, password } = req.body;
+        const { name, email, password, isAdmin } = req.body;
         if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
         const existing = await User.findOne({ email });
         if (existing) return res.status(400).json({ error: 'Email already registered' });
+
+        // only allow creating admin users if request includes correct admin key header
+        if (isAdmin) {
+            const key = req.headers['x-admin-key'] || '';
+            if (key !== ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized to create admin user' });
+        }
+
         const hash = await bcrypt.hash(password, 10);
         const user = await User.create({ name, email, password: hash });
+        // store minimal public profile field elsewhere if needed
         res.json({ success: true, userId: user._id });
     } catch (err) {
         res.status(500).json({ error: 'Registration failed' });
+    }
+});
+
+// Login -> returns JWT
+app.post('/auth/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
+        const user = await User.findOne({ email });
+        if (!user) return res.status(400).json({ error: 'Invalid credentials' });
+        const ok = await bcrypt.compare(password, user.password);
+        if (!ok) return res.status(400).json({ error: 'Invalid credentials' });
+
+        // sign token
+        const payload = { userId: user._id, email: user.email, isAdmin: !!user.isAdmin };
+        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '12h' });
+        res.json({ success: true, token, user: { id: user._id, email: user.email, name: user.name, isAdmin: !!user.isAdmin } });
+    } catch (err) {
+        res.status(500).json({ error: 'Login failed' });
     }
 });
 
