@@ -134,9 +134,11 @@ app.post('/auth/register', async (req, res) => {
 // Login -> returns JWT
 app.post('/auth/login', async (req, res) => {
     try {
-        const { email, password } = req.body;
-        if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
-        const user = await User.findOne({ email });
+        // client may send either an email or a username in the `email` field (labelled 'Username' in UI)
+        const { email: identifier, password } = req.body;
+        if (!identifier || !password) return res.status(400).json({ error: 'Email/username and password required' });
+        // try to find user by email OR by username (stored in `name`)
+        const user = await User.findOne({ $or: [{ email: identifier }, { name: identifier }] });
         if (!user) return res.status(400).json({ error: 'Invalid credentials' });
         const ok = await bcrypt.compare(password, user.password);
         if (!ok) return res.status(400).json({ error: 'Invalid credentials' });
