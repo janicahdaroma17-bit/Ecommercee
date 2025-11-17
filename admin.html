@@ -3,46 +3,374 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Admin - Products</title>
+    <title>Admin Panel - TECHHUB</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+      body {
+        background: #0f1419;
+        color: #e0e0e0;
+        font-family: 'Segoe UI', sans-serif;
+      }
+      .navbar {
+        background: linear-gradient(90deg, #1a2f4a, #243c56);
+        border-bottom: 2px solid #00bfff;
+      }
+      .navbar-brand {
+        font-size: 20px;
+        font-weight: 700;
+        color: #00bfff !important;
+      }
+      .nav-user {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+      .user-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #aaa;
+      }
+      .logout-btn {
+        background: #dc2626;
+        border: none;
+        color: #fff;
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 600;
+        transition: all 0.3s;
+      }
+      .logout-btn:hover {
+        background: #b91c1c;
+      }
+      .dashboard-header {
+        background: linear-gradient(135deg, #2563eb, #3b82f6);
+        padding: 30px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(37, 99, 235, 0.2);
+      }
+      .dashboard-header h1 {
+        font-size: 32px;
+        font-weight: 700;
+        margin: 0;
+      }
+      .dashboard-header p {
+        color: rgba(255, 255, 255, 0.8);
+        margin: 5px 0 0 0;
+      }
+      .tab-buttons {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 30px;
+      }
+      .tab-btn {
+        background: rgba(0, 191, 255, 0.1);
+        border: 2px solid #00bfff;
+        color: #00bfff;
+        padding: 12px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s;
+      }
+      .tab-btn.active {
+        background: linear-gradient(90deg, #2563eb, #3b82f6);
+        border-color: #3b82f6;
+        color: #fff;
+      }
+      .tab-btn:hover {
+        border-color: #00ddff;
+      }
+      .tab-content {
+        display: none;
+      }
+      .tab-content.active {
+        display: block;
+      }
+      .products-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+      }
+      .products-header h2 {
+        font-size: 24px;
+        font-weight: 700;
+        margin: 0;
+      }
+      .add-btn {
+        background: linear-gradient(90deg, #10b981, #14b8a6);
+        border: none;
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s;
+      }
+      .add-btn:hover {
+        background: linear-gradient(90deg, #059669, #0d9488);
+      }
+      .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+      }
+      .product-card {
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(0, 191, 255, 0.2);
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s;
+      }
+      .product-card:hover {
+        border-color: #00bfff;
+        transform: translateY(-4px);
+        box-shadow: 0 10px 30px rgba(0, 191, 255, 0.1);
+      }
+      .product-image {
+        width: 100%;
+        height: 200px;
+        background: linear-gradient(135deg, #1e3c72, #2a5298);
+        object-fit: cover;
+      }
+      .product-info {
+        padding: 15px;
+      }
+      .product-name {
+        font-weight: 700;
+        font-size: 16px;
+        margin-bottom: 8px;
+      }
+      .product-desc {
+        font-size: 12px;
+        color: #999;
+        margin-bottom: 10px;
+        max-height: 40px;
+        overflow: hidden;
+      }
+      .product-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        font-size: 13px;
+      }
+      .product-price {
+        color: #10b981;
+        font-weight: 700;
+      }
+      .product-actions {
+        display: flex;
+        gap: 8px;
+      }
+      .edit-btn, .delete-btn {
+        flex: 1;
+        padding: 8px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 600;
+        transition: all 0.3s;
+      }
+      .edit-btn {
+        background: #2563eb;
+        color: #fff;
+      }
+      .edit-btn:hover {
+        background: #1d4ed8;
+      }
+      .delete-btn {
+        background: #dc2626;
+        color: #fff;
+      }
+      .delete-btn:hover {
+        background: #b91c1c;
+      }
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+      }
+      .modal-overlay.active {
+        display: flex;
+      }
+      .modal-content {
+        background: #1a2332;
+        border: 2px solid #00bfff;
+        border-radius: 12px;
+        padding: 30px;
+        max-width: 500px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+      }
+      .modal-header h3 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 700;
+      }
+      .close-btn {
+        background: none;
+        border: none;
+        color: #00bfff;
+        font-size: 28px;
+        cursor: pointer;
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      .form-group label {
+        display: block;
+        color: #00bfff;
+        font-weight: 600;
+        margin-bottom: 6px;
+        font-size: 13px;
+      }
+      .form-group input, .form-group textarea {
+        width: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid #00bfff;
+        color: #fff;
+        padding: 10px;
+        border-radius: 6px;
+        font-family: inherit;
+      }
+      .form-group textarea {
+        resize: vertical;
+        min-height: 80px;
+      }
+      .form-group input::placeholder, .form-group textarea::placeholder {
+        color: #666;
+      }
+      .modal-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 20px;
+      }
+      .modal-actions button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s;
+      }
+      .save-btn {
+        background: linear-gradient(90deg, #10b981, #14b8a6);
+        color: #fff;
+      }
+      .save-btn:hover {
+        background: linear-gradient(90deg, #059669, #0d9488);
+      }
+      .cancel-btn {
+        background: rgba(0, 191, 255, 0.1);
+        color: #00bfff;
+        border: 1px solid #00bfff;
+      }
+      .cancel-btn:hover {
+        background: rgba(0, 191, 255, 0.2);
+      }
+      .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #666;
+      }
+      .empty-state-icon {
+        font-size: 48px;
+        margin-bottom: 15px;
+      }
+    </style>
   </head>
-  <body class="p-4">
-    <div class="container">
-      <h1 class="mb-4">Admin - Products CRUD</h1>
-
-      <div class="mb-3">
-        <label class="form-label">Admin Key</label>
-        <input id="admin-key" class="form-control" placeholder="Enter admin key or paste from .env" />
-      </div>
-
-      <div class="card mb-4">
-        <div class="card-body">
-          <h5>Add product</h5>
-          <form id="product-form" class="row g-2">
-            <div class="col-md-6">
-              <input id="p-name" class="form-control" placeholder="Name" required />
-            </div>
-            <div class="col-md-2">
-              <input id="p-price" class="form-control" placeholder="Price" type="number" step="0.01" required />
-            </div>
-            <div class="col-md-2">
-              <input id="p-stock" class="form-control" placeholder="Stock" type="number" required />
-            </div>
-            <div class="col-md-12">
-              <input id="p-image" class="form-control" placeholder="Image URL (optional)" />
-            </div>
-            <div class="col-12">
-              <textarea id="p-desc" class="form-control" placeholder="Description"></textarea>
-            </div>
-            <div class="col-12 text-end">
-              <button class="btn btn-primary" type="submit">Create</button>
-            </div>
-          </form>
+  <body>
+    <nav class="navbar sticky-top">
+      <div class="container-fluid">
+        <span class="navbar-brand">📱 TECHHUB Admin</span>
+        <div class="nav-user">
+          <div class="user-info">
+            👤 <span id="user-display">Admin</span>
+          </div>
+          <button class="logout-btn" onclick="logout()">🔴 Logout</button>
         </div>
       </div>
+    </nav>
 
-      <h3>Products</h3>
-      <div id="products-list" class="row gy-3"></div>
+    <div class="container mt-5">
+      <div class="dashboard-header">
+        <h1>⚙️ Admin Dashboard</h1>
+        <p>Manage your products and orders</p>
+      </div>
+
+      <div class="tab-buttons">
+        <button class="tab-btn active" onclick="switchTab('products')">📦 Products</button>
+        <button class="tab-btn" onclick="switchTab('orders')">📋 Orders</button>
+      </div>
+
+      <div id="products" class="tab-content active">
+        <div class="products-header">
+          <h2>Product List</h2>
+          <button class="add-btn" onclick="openModal()">➕ Add New Product</button>
+        </div>
+        <div id="products-grid" class="products-grid"></div>
+      </div>
+
+      <div id="orders" class="tab-content">
+        <h2>Orders</h2>
+        <div id="orders-list" style="color: #999; text-align: center; padding: 40px;">Loading orders...</div>
+      </div>
+    </div>
+
+    <div id="modal" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Add New Product</h3>
+          <button class="close-btn" onclick="closeModal()">✕</button>
+        </div>
+        <form id="product-form" onsubmit="saveProduct(event)">
+          <div class="form-group">
+            <label>Product Name</label>
+            <input type="text" id="p-name" placeholder="Enter product name" required />
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <textarea id="p-desc" placeholder="Enter product description"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Price (₱)</label>
+            <input type="number" id="p-price" placeholder="0.00" step="0.01" required />
+          </div>
+          <div class="form-group">
+            <label>Stock</label>
+            <input type="number" id="p-stock" placeholder="0" required />
+          </div>
+          <div class="form-group">
+            <label>Image URL</label>
+            <input type="text" id="p-image" placeholder="https://..." />
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="cancel-btn" onclick="closeModal()">Cancel</button>
+            <button type="submit" class="save-btn">Save Product</button>
+          </div>
+        </form>
+      </div>
     </div>
 
     <script src="admin.js"></script>
