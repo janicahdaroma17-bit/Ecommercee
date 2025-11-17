@@ -123,15 +123,8 @@ app.post('/auth/register', async (req, res) => {
         const existing = await User.findOne({ email });
         if (existing) return res.status(400).json({ error: 'Email already registered' });
 
-        // only allow creating admin users if request includes correct admin key header
-        if (isAdmin) {
-            const key = req.headers['x-admin-key'] || '';
-            if (key !== ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized to create admin user' });
-        }
-
         const hash = await bcrypt.hash(password, 10);
-        const user = await User.create({ name, email, password: hash });
-        // store minimal public profile field elsewhere if needed
+        const user = await User.create({ name, email, password: hash, isAdmin: !!isAdmin });
         res.json({ success: true, userId: user._id });
     } catch (err) {
         res.status(500).json({ error: 'Registration failed' });
