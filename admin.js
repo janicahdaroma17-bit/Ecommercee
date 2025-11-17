@@ -1,4 +1,5 @@
-const API_BASE = window.location.origin.replace(window.location.pathname, '') + ':3000';
+// Use relative API paths so the admin UI works when frontend and backend are served from the same origin
+const API_BASE = '';
 
 function getAdminKey() {
   return document.getElementById('admin-key').value.trim();
@@ -6,7 +7,7 @@ function getAdminKey() {
 
 async function fetchProducts() {
   try {
-    const res = await fetch(API_BASE + '/products');
+    const res = await fetch('/products');
     return await res.json();
   } catch (e) {
     console.error('Failed to fetch products', e);

@@ -84,7 +84,8 @@ async function renderProducts() {
     // Try to fetch products from backend; fallback to local productList
     let productsToRender = productList;
     try {
-        const res = await fetch('http://localhost:3000/products');
+        // Use relative API path so frontend works on Render (same origin)
+        const res = await fetch('/products');
         if (res.ok) {
             const data = await res.json();
             if (Array.isArray(data) && data.length > 0) {

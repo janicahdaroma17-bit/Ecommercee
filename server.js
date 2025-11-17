@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,6 +17,9 @@ const User = require('./models/User');
 
 app.use(cors());
 app.use(express.json());
+
+// Serve frontend static files from project root so index.html and admin.html are available
+app.use(express.static(path.join(__dirname)));
 
 mongoose.connect(MONGODB_URI, {
     useNewUrlParser: true,
@@ -31,8 +35,8 @@ function checkAdmin(req, res) {
     return key === ADMIN_KEY;
 }
 
-// Health
-app.get('/', (req, res) => {
+// Health (API) endpoint
+app.get('/api/health', (req, res) => {
     res.json({ ok: true, message: 'Ecommerce API running' });
 });
 
@@ -141,4 +145,12 @@ app.get('/orders', async (req, res) => {
 app.listen(PORT, () => {
     console.log(`✅ Server is running on http://localhost:${PORT}`);
     console.log('Backend ready and connected.');
+});
+
+// Fallback: serve index.html for any non-API route (enables SPA/static hosting)
+app.get('*', (req, res) => {
+    if (req.path.startsWith('/api') || req.path.startsWith('/products') || req.path.startsWith('/orders') || req.path.startsWith('/auth')) {
+        return res.status(404).json({ error: 'API route not found' });
+    }
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
