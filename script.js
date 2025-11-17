@@ -145,7 +145,13 @@ function addToCart(id) {
     } else {
         // Item is not in cart, add new item object
         if (prod) {
-            cart.push({ id: prod.id, name: prod.name, price: prod.price, qty: 1 });
+            cart.push({
+                id: prod.id, // local id for UI
+                productId: prod.dbId || prod._id, // MongoDB ObjectId for backend
+                name: prod.name,
+                price: prod.price,
+                qty: 1
+            });
         }
     }
 
@@ -262,20 +268,13 @@ if (confirmCheckoutBtn) {
     const total = parseFloat(totalEl.innerText);
 
 
-    // Map cart items to include productId (MongoDB ObjectId from dbId)
-    const itemsWithProductId = cart.map(item => {
-        // Try to find the product in productList with dbId
-        let product = null;
-        if (Array.isArray(productList)) {
-            product = productList.find(p => (p.id === item.id || p._id === item.id || p.dbId === item.id));
-        }
-        return {
-            productId: product?.dbId || product?._id || undefined,
-            name: item.name,
-            price: item.price,
-            qty: item.qty
-        };
-    });
+    // Use productId from cart items if present
+    const itemsWithProductId = cart.map(item => ({
+        productId: item.productId,
+        name: item.name,
+        price: item.price,
+        qty: item.qty
+    }));
 
     const order = {
         customer: { name, email, address },
