@@ -171,6 +171,29 @@ app.post('/orders', async (req, res) => {
         const { customer, items, total } = req.body;
         if (!items || !Array.isArray(items) || items.length === 0) return res.status(400).json({ error: 'No items in order' });
 
+        // Validate each item has a productId and that the product exists
+        const invalidItems = [];
+        for (let i = 0; i < items.length; i++) {
+            const it = items[i];
+            if (!it.productId) {
+                invalidItems.push({ index: i, reason: 'missing productId', item: it });
+                continue;
+            }
+            if (!mongoose.Types.ObjectId.isValid(it.productId)) {
+                invalidItems.push({ index: i, reason: 'invalid productId format', item: it });
+                continue;
+            }
+            const prod = await Product.findById(it.productId).lean();
+            if (!prod) {
+                invalidItems.push({ index: i, reason: 'product not found', productId: it.productId });
+            }
+        }
+
+        if (invalidItems.length > 0) {
+            console.error('Order validation failed:', invalidItems);
+            return res.status(400).json({ error: 'Invalid order items', details: invalidItems });
+        }
+
         const order = await Order.create({ customer, items, total });
 
         // Decrease stock for each product if productId provided
@@ -186,7 +209,8 @@ app.post('/orders', async (req, res) => {
 
         res.json({ success: true, orderId: order._id });
     } catch (err) {
-        res.status(500).json({ error: 'Failed to create order' });
+        console.error('Error creating order:', err);
+        res.status(500).json({ error: 'Failed to create order', message: err.message });
     }
 });
 
