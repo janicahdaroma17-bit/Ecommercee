@@ -167,6 +167,7 @@ app.get('/auth/me', async (req, res) => {
 // Orders
 app.post('/orders', async (req, res) => {
     try {
+        console.log('Incoming order payload:', req.body);
         const { customer, items, total } = req.body;
         if (!items || !Array.isArray(items) || items.length === 0) return res.status(400).json({ error: 'No items in order' });
 
