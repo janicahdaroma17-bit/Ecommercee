@@ -152,6 +152,18 @@ app.post('/auth/login', async (req, res) => {
     }
 });
 
+// Return current user info based on verified JWT
+app.get('/auth/me', async (req, res) => {
+    try {
+        if (!req.user || !req.user.userId) return res.status(401).json({ error: 'Unauthorized' });
+        const user = await User.findById(req.user.userId).select('-password').lean();
+        if (!user) return res.status(404).json({ error: 'User not found' });
+        res.json({ success: true, user: { id: user._id, name: user.name, email: user.email, isAdmin: !!user.isAdmin } });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch user' });
+    }
+});
+
 // Orders
 app.post('/orders', async (req, res) => {
     try {

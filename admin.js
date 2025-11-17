@@ -25,11 +25,42 @@ function displayUser() {
       document.getElementById('user-display').textContent = user.name || user.email || 'Admin';
       return;
     } catch (e) {
-      // fallthrough to generic admin label
+      // fallthrough to server verification
     }
   }
-  // default display if no user info available
-  document.getElementById('user-display').textContent = 'Admin';
+
+  // If we don't have a stored user, verify the token with the server
+  (async () => {
+    try {
+      const res = await fetch('/auth/me', { headers: getAuthHeaders() });
+      if (!res.ok) {
+        // unauthorized or other error -> redirect to login
+        if (res.status === 401) {
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('auth_user');
+          window.location.href = '/login.html';
+          return;
+        }
+        throw new Error('Failed to verify user');
+      }
+      const data = await res.json();
+      if (!data.success || !data.user) throw new Error('Failed to get user');
+      if (!data.user.isAdmin) {
+        alert('Access denied: Admins only');
+        window.location.href = '/index.html';
+        return;
+      }
+      // save user and display name
+      localStorage.setItem('auth_user', JSON.stringify(data.user));
+      document.getElementById('user-display').textContent = data.user.name || data.user.email || 'Admin';
+    } catch (e) {
+      console.error('Auth verify error', e);
+      alert('Authentication error. Please login again.');
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
+      window.location.href = '/login.html';
+    }
+  })();
 }
 
 function logout() {
