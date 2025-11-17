@@ -1,6 +1,7 @@
 // --- Basic product data (20 Clothing Products) ---
 const PEXELS_API_KEY = "adHh1zRX3MvKcweofofLoW3YkUjml4whDd64jIxUAKEqDPKjIkl7v0oc";
-const productList = [
+// Make productList mutable so we can replace it with DB products (including dbId)
+let productList = [
     { id: 1, name: "Classic Denim Jacket", price: 1299.00, desc: "Timeless blue denim jacket with a comfortable fit.", stock: 20 },
     { id: 2, name: "Cotton Crewneck T-Shirt", price: 399.00, desc: "Soft 100% cotton tee available in multiple colors.", stock: 60 },
     { id: 3, name: "Slim Fit Chinos", price: 899.00, desc: "Stylish slim-fit chinos perfect for casual or smart wear.", stock: 35 },
@@ -99,6 +100,9 @@ async function renderProducts() {
                     imageUrl: p.imageUrl,
                     dbId: p._id
                 }));
+
+                // Replace the global productList so addToCart and other logic use the DB-backed products
+                productList = productsToRender.slice();
             }
         }
     } catch (e) {
