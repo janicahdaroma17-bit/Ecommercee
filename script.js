@@ -182,9 +182,13 @@ function renderCart() {
 
     if (cart.length === 0) {
         cartListEl.innerHTML = '<li class="list-group-item text-center text-muted">Your cart is empty.</li>';
-        document.getElementById('checkout-container').style.display = 'none';
+        // Only try to hide checkout container if it exists (on checkout.html)
+        const checkoutContainer = document.getElementById('checkout-container');
+        if (checkoutContainer) checkoutContainer.style.display = 'none';
     } else {
-        document.getElementById('checkout-container').style.display = 'block';
+        // Only try to show checkout container if it exists (on checkout.html)
+        const checkoutContainer = document.getElementById('checkout-container');
+        if (checkoutContainer) checkoutContainer.style.display = 'block';
 
         cart.forEach(item => {
             total += item.price * item.qty;
