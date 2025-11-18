@@ -26,8 +26,49 @@ app.use(express.static(path.join(__dirname)));
 mongoose.connect(MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-}).then(() => {
+}).then(async () => {
     console.log('✅ Connected to MongoDB');
+    // Remove all products and insert new ones
+    const newProducts = [
+        {
+            name: 'Minimalist White Sneakers',
+            price: 2499,
+            desc: 'Crisp, clean sneakers for everyday wear.',
+            stock: 30,
+            imageUrl: ''
+        },
+        {
+            name: 'Classic Black Hoodie',
+            price: 1599,
+            desc: 'Soft fleece hoodie with a modern fit.',
+            stock: 25,
+            imageUrl: ''
+        },
+        {
+            name: 'Slim Fit Blue Jeans',
+            price: 1899,
+            desc: 'Timeless blue jeans with a slim silhouette.',
+            stock: 40,
+            imageUrl: ''
+        },
+        {
+            name: 'Olive Green Cargo Pants',
+            price: 1399,
+            desc: 'Functional cargo pants with multiple pockets.',
+            stock: 20,
+            imageUrl: ''
+        },
+        {
+            name: 'Lightweight Windbreaker',
+            price: 1799,
+            desc: 'Water-resistant windbreaker for all seasons.',
+            stock: 18,
+            imageUrl: ''
+        }
+    ];
+    await Product.deleteMany({});
+    await Product.insertMany(newProducts);
+    console.log('🌟 Reset products collection with new products.');
 }).catch(err => {
     console.error('❌ MongoDB connection error:', err.message);
 });
