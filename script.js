@@ -140,6 +140,7 @@ async function renderProducts() {
 renderProducts()
 
 function addToCart(id) {
+
     const prod = productList.find(p => p.id === id);
     const item = cart.find(i => i.id === id);
 
@@ -272,13 +273,21 @@ if (confirmCheckoutBtn) {
     const total = parseFloat(totalEl.innerText);
 
 
-    // Use productId from cart items if present
-    const itemsWithProductId = cart.map(item => ({
-        productId: item.productId,
-        name: item.name,
-        price: item.price,
-        qty: item.qty
-    }));
+    // Use productId from cart items if present, fallback to lookup if missing
+    const itemsWithProductId = cart.map(item => {
+        let productId = item.productId;
+        if (!productId) {
+            // Try to find in productList by id
+            const prod = productList.find(p => p.id === item.id);
+            productId = prod?.dbId || prod?._id;
+        }
+        return {
+            productId,
+            name: item.name,
+            price: item.price,
+            qty: item.qty
+        };
+    });
 
     const order = {
         customer: { name, email, address },
