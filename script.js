@@ -273,11 +273,11 @@ if (confirmCheckoutBtn) {
     const total = parseFloat(totalEl.innerText);
 
 
-    // Use productId from cart items if present, fallback to lookup if missing
+
+    // Use productId from cart items if present, fallback to lookup if missing, and DO NOT include local id
     const itemsWithProductId = cart.map(item => {
         let productId = item.productId;
         if (!productId) {
-            // Try to find in productList by id
             const prod = productList.find(p => p.id === item.id);
             productId = prod?.dbId || prod?._id;
         }
