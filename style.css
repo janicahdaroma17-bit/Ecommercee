@@ -124,7 +124,7 @@ body::before {
 /* Card Text */
 .card-title {
   font-weight: 700;
-  color: #00ffff;
+  color: #ffffff; /* changed from cyan to white for improved contrast */
 }
 
 .card-text {
