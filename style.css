@@ -127,6 +127,13 @@ body::before {
   color: #ffffff; /* changed from cyan to white for improved contrast */
 }
 
+/* Ensure Bootstrap's default h5 or other rules don't override our title color
+   Add a more specific selector and a subtle shadow for legibility */
+.card .card-title, .product-card .card-title, h5.card-title {
+  color: #ffffff !important;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.55);
+}
+
 .card-text {
   color: #a8f6ff;
 }
