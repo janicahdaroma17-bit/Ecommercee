@@ -137,7 +137,7 @@ async function renderProducts() {
         });
     });
 }
-renderProducts()
+// Removed duplicate call to avoid fetching products twice
 
 function addToCart(id) {
 
